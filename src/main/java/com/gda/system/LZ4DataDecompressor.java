@@ -17,10 +17,7 @@ public class LZ4DataDecompressor {
 
   public byte[] decompress(byte[] compressed) {
     int destLength = SafeUtils.readInt(compressed, 0);
-
-    byte[] array = new byte[compressed.length-4];
-    System.arraycopy(compressed, 4, array, 0, compressed.length-4);
-    return decompressor.decompress(array, destLength);
+    return decompressor.decompress(compressed, 4, destLength);
   }
 
   public static void main(String[] args) throws IOException {
