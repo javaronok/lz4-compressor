@@ -1,0 +1,21 @@
+plugins {
+	id 'java'
+	id 'idea'
+}
+
+group = 'com.gda.system'
+version = '0.0.1'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.lz4:lz4-java:1.5.0'
+	compile 'args4j:args4j:2.33'
+}
+
+test {
+	useJUnitPlatform()
+}
