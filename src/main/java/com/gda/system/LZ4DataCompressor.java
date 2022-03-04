@@ -24,13 +24,42 @@ public class LZ4DataCompressor {
 
     byte[] compressed = compressor.compress(source); // Compress source data
 
-    byte[] result = new byte[compressed.length + 4]; // Create result compressed array
+    byte[] result = new byte[compressed.length + 1]; // Create result compressed array
 
-    UnsafeUtils.writeInt(result, 0, source.length); // Add to start source data array length
+    byte header = buildHeader(source.length, compressed.length); // Calculate header
 
-    System.arraycopy(compressed, 0, result, 4, compressed.length); // Copy compressed data with Integer offset
+    UnsafeUtils.writeByte(result, 0, header); // Add to start source data array length
+
+    System.arraycopy(compressed, 0, result, 1, compressed.length); // Copy compressed data with Integer offset
 
     return result;
+  }
+
+  // First byte of compressed array is header byte, to specify dictionary
+  // and approximate buffer size needed to decompress.
+  // The format is 0b0000XXXX
+  // 0bXXXX0000 - reserved
+  //
+  // Mapping: 0000 - compressed length * 1
+  //          0001 - compressed length * 2
+  //          0010 - compressed length * 4
+  //          0011 - compressed length * 8
+  //          ...
+  //          1111 - compressed length * 32768
+  public static byte buildHeader(int inputSize, int compressedSize) {
+    if (inputSize > compressedSize) {
+      byte header = 0;
+      int ratio = inputSize / compressedSize;
+      for (int i = 1; i < 16; i++) {
+        if (ratio < 1 << i) {
+          header |= i;
+          break;
+        }
+      }
+      return header;
+    } else {
+      return 0;
+    }
   }
 
   public static void main(String[] args) throws IOException {
